@@ -22,7 +22,6 @@ cc_args = [
 exe = executable(
   meson.project_name(),
   'graphranker.c',
-  version: meson.project_version(),
   c_args: cc_args
 )
 
