@@ -24,6 +24,9 @@ static inline enum cmd eval_cmd(void);
 static inline int add(void);
 static inline int topk(void);
 
+static graph *graph_create(int index);
+static void graph_destroy(graph *g);
+
 static inline ranking *ranking_create(void);
 
 /* Read one ASCII number from stdin and convert it into a uint */
@@ -65,6 +68,32 @@ inline ranking *ranking_create(void) {
 	r->size = 0;
 	r->heap = malloc(N_RANK * sizeof(graph*));
 	return r;
+}
+
+/* Create graph object */
+graph *graph_create(int index) {
+	int i, j;
+	graph *g = malloc(sizeof(graph));
+
+	g->mat = malloc(N_NODES * sizeof(unsigned int*));
+	for (i = 0; i < N_NODES; i++)
+		g->mat[i] = malloc(N_NODES * sizeof(unsigned int));
+
+	for (i = 0; i < N_NODES; i++)
+		for (j = 0; j < N_NODES; j++)
+			g->mat[i][j] = read_num();
+
+	g->index = index;
+
+	return g;
+}
+
+/* Destroy graph object */
+void graph_destroy(graph *g) {
+	for (int i = 0; i < N_NODES; i++)
+		free(g->mat[i]);
+	free(g->mat);
+	free(g);
 }
 
 /* AggiungiGrafo command */
