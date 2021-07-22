@@ -348,7 +348,10 @@ inline void graph_rank(void) {
 
 /* AggiungiGrafo command */
 int add(void) {
-	/* TODO  */
+	GRAPH_INDEX++;
+	graph_parse();
+	graph_rank();
+	ranking_insert(GRAPH->score, GRAPH_INDEX);
 	return 0;
 }
 
