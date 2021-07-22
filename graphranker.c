@@ -1,16 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+typedef struct {
+	int            index;
+	long           sum;
+	unsigned int **mat;
+} graph;
+
+typedef struct {
+	int     size;
+	graph **heap;
+} ranking;
+
 enum cmd {ADD, TOPK, END};
 
 static unsigned int N_NODES;
 static unsigned int N_RANK;
+static ranking *RANKING = NULL;
 
 static inline unsigned int read_num(void);
 static inline int start_main_loop(void);
 static inline enum cmd eval_cmd(void);
 static int add(void);
 static int topk(void);
+
+static inline ranking *ranking_create(void);
 
 /* reads one ASCII number from stdin and converts it into a uint */
 inline unsigned int read_num(void) {
@@ -41,6 +55,18 @@ inline enum cmd eval_cmd(void) {
 		return END;
 }
 
+/*
+ * Create ranking object
+ * Note: since we will be having only one ranking, there is no need to destroy
+ * it
+ */
+inline ranking *ranking_create(void) {
+	ranking *r = malloc(sizeof(ranking));
+	r->size = 0;
+	r->heap = malloc(N_RANK * sizeof(graph*));
+	return r;
+}
+
 /* AggiungiGrafo command */
 int add(void) {
 	/* TODO  */
@@ -49,7 +75,12 @@ int add(void) {
 
 /* TopK command */
 int topk(void) {
-	/* TODO  */
+	if (RANKING == NULL)
+		return 0;
+	int i;
+	for (i = 0; i < N_RANK - 1; i++)
+		printf("%d ", RANKING->heap[i]->index);
+	printf("%d", RANKING->heap[i]->index);
 	return 0;
 }
 
