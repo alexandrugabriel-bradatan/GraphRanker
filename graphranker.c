@@ -1,36 +1,38 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+typedef unsigned int uint;
+
 typedef struct {
-	int            index;
-	long           sum;
-	unsigned int **mat;
+	uint   index;
+	long   sum;
+	uint **mat;
 } graph;
 
 typedef struct {
-	int     size;
+	uint     size;
 	graph **heap;
 } ranking;
 
 enum cmd {ADD, TOPK, END};
 
-static unsigned int N_NODES;
-static unsigned int N_RANK;
+static uint N_NODES;
+static uint N_RANK;
 static ranking *RANKING = NULL;
 
-static inline unsigned int read_num(void);
+static inline uint read_num(void);
 static inline int start_main_loop(void);
 static inline enum cmd eval_cmd(void);
 static inline int add(void);
 static inline int topk(void);
 
-static graph *graph_create(int index);
+static graph *graph_create(uint index);
 static void graph_destroy(graph *g);
 
 static inline ranking *ranking_create(void);
 
 /* Read one ASCII number from stdin and convert it into a uint */
-unsigned int read_num(void) {
+uint read_num(void) {
 	char c;
 	char num_buf[11];
 	u_int8_t i;
@@ -40,7 +42,7 @@ unsigned int read_num(void) {
 		num_buf[i] = c;
 	num_buf[i] = '\0';
 
-	unsigned int ret = 0;
+	uint ret = 0;
 	for (i = 0; num_buf[i] != '\0'; i++)
 		ret = 10 * ret + (num_buf[i] - '0');
 	return ret;
@@ -71,8 +73,8 @@ inline ranking *ranking_create(void) {
 }
 
 /* Create graph object */
-graph *graph_create(int index) {
-	int i, j;
+graph *graph_create(uint index) {
+	uint i, j;
 	graph *g = malloc(sizeof(graph));
 
 	g->mat = malloc(N_NODES * sizeof(unsigned int*));
@@ -106,7 +108,7 @@ int add(void) {
 int topk(void) {
 	if (RANKING == NULL)
 		return 0;
-	int i;
+	uint i;
 	for (i = 0; i < N_RANK - 1; i++)
 		printf("%d ", RANKING->heap[i]->index);
 	printf("%d", RANKING->heap[i]->index);
