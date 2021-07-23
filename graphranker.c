@@ -26,7 +26,7 @@ static int topk(void);
 
 static inline ranking *ranking_create(void);
 
-/* reads one ASCII number from stdin and converts it into a uint */
+/* Read one ASCII number from stdin and convert it into a uint */
 inline unsigned int read_num(void) {
 	char c;
 	char num_buf[11];
@@ -44,7 +44,7 @@ inline unsigned int read_num(void) {
 }
 
 /*
- * Reads a line from stdin and translates the command into a cmd enum.
+ * Read a line from stdin and translate the command into a cmd enum.
  * Hypothesis: user input is always correct!
  */
 inline enum cmd eval_cmd(void) {
@@ -84,7 +84,7 @@ int topk(void) {
 	return 0;
 }
 
-/* Executes repl */
+/* Execute repl */
 inline int start_main_loop(void) {
 	enum cmd cur_cmd;
 	int out;
