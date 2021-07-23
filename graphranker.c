@@ -13,7 +13,6 @@ typedef struct {
 } node;
 
 typedef struct {
-	uint   index;
 	ulong  score;
 	node  *nodes;
 } graph;
@@ -53,6 +52,8 @@ static uint N_NODES;
 static uint N_RANK;
 static ranking *RANKING = NULL;
 static pqueue *PQUEUE = NULL;
+static graph *GRAPH = NULL;
+static uint GRAPH_INDEX = -1;
 
 static inline uint read_num(void);
 static inline int start_main_loop(void);
@@ -60,8 +61,8 @@ static inline enum cmd eval_cmd(void);
 static inline int add(void);
 static inline int topk(void);
 
-static graph *graph_create(uint index); // io-bound
-static inline void graph_destroy(graph *g);
+static inline void graph_create(void);
+static void graph_parse(void); // io-bound
 
 static inline void ranking_create(void);
 static inline void ranking_insert(ulong key, uint val);
@@ -262,30 +263,20 @@ inline void pqueue_clear(void) {
 	PQUEUE->len = 0;
 }
 
-/* Create graph object */
-graph *graph_create(uint index) {
-	uint i, j;
-	graph *g = malloc(sizeof(graph));
-
-	g->score = 0;
-	g->nodes = malloc(N_NODES * sizeof(node));
-	for (uint i = 0; i < N_NODES; i++) {
-		g->nodes[i].edges = malloc(N_NODES * sizeof(uint));
-		for (uint j = 0; j < N_NODES; j++)
-			g->nodes[i].edges[j] = read_num();
-	}
-	g->index = index;
-
-	return g;
+/* Crate new graph */
+inline void graph_create(void) {
+	GRAPH = malloc(sizeof(graph));
 }
 
-/* Destroy graph object */
-inline void graph_destroy(graph *g) {
+/* Parse new graph from stdin */
+void graph_parse(void) {
+	GRAPH->score = 0;
+	GRAPH->nodes = malloc(N_NODES * sizeof(node));
 	for (uint i = 0; i < N_NODES; i++) {
-		free(g->nodes[i].edges);
+		GRAPH->nodes[i].edges = malloc(N_NODES * sizeof(uint));
+		for (uint j = 0; j < N_NODES; j++)
+			GRAPH->nodes[i].edges[j] = read_num();
 	}
-	free(g->nodes);
-	free(g);
 }
 
 /* AggiungiGrafo command */
@@ -326,6 +317,7 @@ int main(void) {
 	N_NODES = read_num();
 	N_RANK = read_num();
 	ranking_create();
+	graph_create();
 	pqueue_create();
 	return start_main_loop();
 }
