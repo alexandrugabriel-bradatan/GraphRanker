@@ -21,13 +21,13 @@ static ranking *RANKING = NULL;
 static inline unsigned int read_num(void);
 static inline int start_main_loop(void);
 static inline enum cmd eval_cmd(void);
-static int add(void);
-static int topk(void);
+static inline int add(void);
+static inline int topk(void);
 
 static inline ranking *ranking_create(void);
 
 /* Read one ASCII number from stdin and convert it into a uint */
-inline unsigned int read_num(void) {
+unsigned int read_num(void) {
 	char c;
 	char num_buf[11];
 	u_int8_t i;
@@ -47,7 +47,7 @@ inline unsigned int read_num(void) {
  * Read a line from stdin and translate the command into a cmd enum.
  * Hypothesis: user input is always correct!
  */
-inline enum cmd eval_cmd(void) {
+enum cmd eval_cmd(void) {
 	char cmd[15];
 	if (fgets(cmd, 15, stdin))
 		return cmd[0] == 'A' ? ADD : TOPK;
