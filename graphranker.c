@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define heap_parent(i) ((i - 1) / 2)
+
 typedef unsigned int uint;
 
 typedef struct {
@@ -10,8 +12,14 @@ typedef struct {
 } graph;
 
 typedef struct {
-	uint     size;
-	graph **heap;
+	ulong key;
+	uint  val;
+} ranking_node;
+
+/* The ranking is implemented using a max-heap with the graph indexes as keys */
+typedef struct {
+	uint          len;
+	ranking_node *heap;
 } ranking;
 
 enum cmd {ADD, TOPK, END};
@@ -29,7 +37,11 @@ static inline int topk(void);
 static graph *graph_create(uint index);
 static void graph_destroy(graph *g);
 
-static inline ranking *ranking_create(void);
+static inline void ranking_create(void);
+static inline void ranking_insert(ulong key, uint val);
+static inline void ranking_swap(uint i, uint j);
+static void ranking_max_heapify(uint i); // recursive
+static inline void ranking_walk(void);
 
 /* Read one ASCII number from stdin and convert it into a uint */
 uint read_num(void) {
@@ -60,16 +72,75 @@ enum cmd eval_cmd(void) {
 		return END;
 }
 
+/* Create the ranking object */
+inline void ranking_create(void) {
+	RANKING = malloc(sizeof(ranking));
+	RANKING->len = 0;
+	RANKING->heap = malloc((N_RANK + 1) * sizeof(ranking_node));
+}
+
+/* Swap ranking's i-th and j-th heap elements */
+inline void ranking_swap(uint i, uint j) {
+	ranking_node tmp;
+
+	tmp = RANKING->heap[i];
+	RANKING->heap[i] = RANKING->heap[j];
+	RANKING->heap[j] = tmp;
+}
+
 /*
- * Create ranking object
- * Note: since we will be having only one ranking, there is no need to destroy
- * it
+ * Create a max-heap with root at position i assuming the children of the
+ * i-th node are both sub-max-heaps.
  */
-inline ranking *ranking_create(void) {
-	ranking *r = malloc(sizeof(ranking));
-	r->size = 0;
-	r->heap = malloc(N_RANK * sizeof(graph*));
-	return r;
+void ranking_max_heapify(uint i) {
+	uint pos_max, l, r;
+
+	l = 2 * i;
+	r = 2 * i + 1;
+	if (l < RANKING->len && RANKING->heap[l].key > RANKING->heap[i].key)
+		pos_max = l;
+	else
+		pos_max = i;
+	if (r < RANKING->len && RANKING->heap[r].key > RANKING->heap[i].key)
+		pos_max = r;
+	if (pos_max != i) {
+		ranking_swap(i, pos_max);
+		ranking_max_heapify(pos_max);
+	}
+}
+
+/*
+ * Insert one item into the ranking if it allows it, otherwise pop the node
+ * with the largest key
+ */
+inline void ranking_insert(ulong key, uint val) {
+	if (key > RANKING->heap[0].key)
+		return;
+
+	RANKING->len++;
+	RANKING->heap[RANKING->len - 1].key = key;
+	RANKING->heap[RANKING->len - 1].val = val;
+
+	for (uint i = RANKING->len - 1;
+			i > 0 && RANKING->heap[heap_parent(i)].key < RANKING->heap[i].key;
+			i = heap_parent(i)) {
+		ranking_swap(i, heap_parent(i));
+	}
+
+	if (RANKING->len > N_RANK) {
+		ranking_swap(0, RANKING->len - 1);
+		RANKING->len--;
+		ranking_max_heapify(0);
+	}
+}
+
+inline void ranking_walk(void) {
+	if (RANKING->len == 0)
+		return;
+
+	for (uint i = 0; i < RANKING->len - 1; i++)
+		printf("%d ", RANKING->heap[i].val);
+	printf("%d", RANKING->heap[RANKING->len - 1].val);
 }
 
 /* Create graph object */
@@ -105,13 +176,8 @@ int add(void) {
 }
 
 /* TopK command */
-int topk(void) {
-	if (RANKING == NULL)
-		return 0;
-	uint i;
-	for (i = 0; i < N_RANK - 1; i++)
-		printf("%d ", RANKING->heap[i]->index);
-	printf("%d", RANKING->heap[i]->index);
+inline int topk(void) {
+	ranking_walk();
 	return 0;
 }
 
@@ -140,5 +206,6 @@ inline int start_main_loop(void) {
 int main(void) {
 	N_NODES = read_num();
 	N_RANK = read_num();
+	ranking_create();
 	return start_main_loop();
 }
