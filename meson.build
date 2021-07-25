@@ -26,7 +26,7 @@ exe = executable(
 )
 
 test_env = environment({'SOURCE_ROOT': meson.source_root()})
-test_runner = find_program('./tests/runner.sh')
+test_runner = find_program('./tests/runner.py')
 test(
   'open',
   test_runner,
