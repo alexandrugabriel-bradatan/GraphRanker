@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <limits.h>
 
 #define heap_parent(i) ((i - 1) / 2)
 
@@ -63,6 +64,9 @@ static inline int topk(void);
 
 static inline void graph_create(void);
 static void graph_parse(void); // io-bound
+static uint graph_next_neighbour(uint node, uint *w); // static vars
+static inline ulong graph_sum(void);
+static inline void graph_rank(void);
 
 static inline void ranking_create(void);
 static inline void ranking_insert(ulong key, uint val);
@@ -277,6 +281,69 @@ void graph_parse(void) {
 		for (uint j = 0; j < N_NODES; j++)
 			GRAPH->nodes[i].edges[j] = read_num();
 	}
+}
+
+/*
+ * Works in a similar maner to strtok. For every iteration the next neighbour's
+ * index and the corresponding edge weight are returned. If there are no more
+ * neighbours, N_NODES is returned.
+ */
+uint graph_next_neighbour(uint node, uint *w) {
+	static uint cur_node = 0;
+	static uint old_neighbour = 0;
+
+	if (node != cur_node) {
+		cur_node = node;
+		old_neighbour = 0;
+	}
+
+	while (GRAPH->nodes[cur_node].edges[old_neighbour] == 0 &&
+			old_neighbour < N_NODES)
+		old_neighbour++;
+
+	if (old_neighbour < N_NODES)
+		*w = GRAPH->nodes[cur_node].edges[old_neighbour];
+
+	return old_neighbour++;
+}
+
+inline ulong graph_sum(void) {
+	ulong r = 0;
+	for (uint i = 0; i < N_NODES; i++) {
+		if (GRAPH->nodes[i].dist != ULONG_MAX)
+			r += GRAPH->nodes[i].dist;
+	}
+	return r;
+}
+
+inline void graph_rank(void) {
+	uint min_node, neighbour, neighbour_weight;
+	ulong min_p, new_p;
+
+	GRAPH->nodes[0].dist = 0;
+	pqueue_enqueue(0, 0);
+	for (uint i = 1; i < N_NODES; i++) {
+		pqueue_enqueue(i, ULONG_MAX);
+		GRAPH->nodes[i].dist = ULONG_MAX;
+	}
+
+	while (!pqueue_empty()) {
+		min_node = pqueue_unqueue();
+		min_p = GRAPH->nodes[min_node].dist;
+		if (min_p == ULONG_MAX)
+			break;
+		for (neighbour = graph_next_neighbour(min_node, &neighbour_weight);
+				neighbour < N_NODES;
+				neighbour = graph_next_neighbour(min_node, &neighbour_weight)) {
+			new_p = min_p + neighbour_weight;
+			if (GRAPH->nodes[neighbour].dist > new_p) {
+				GRAPH->nodes[neighbour].dist = new_p;
+				pqueue_decrease_priority(neighbour, new_p);
+			}
+		}
+	}
+
+	GRAPH->score = graph_sum();
 }
 
 /* AggiungiGrafo command */
