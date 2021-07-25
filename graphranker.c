@@ -221,6 +221,9 @@ inline void pqueue_enqueue(uint key, ulong p) {
 	PQUEUE->len++;
 
 	pqueue_bubble_up(PQUEUE->len - 1);
+
+	if (PQUEUE->len > N_NODES)
+		abort();
 }
 
 /* Equivalent to ranking_max_heapify, only with min-heaps */
@@ -319,6 +322,8 @@ inline ulong graph_sum(void) {
 inline void graph_rank(void) {
 	uint min_node, neighbour, neighbour_weight;
 	ulong min_p, new_p;
+
+	pqueue_clear();
 
 	GRAPH->nodes[0].dist = 0;
 	pqueue_enqueue(0, 0);
