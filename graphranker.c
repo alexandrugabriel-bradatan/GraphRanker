@@ -4,6 +4,8 @@
 #include <limits.h>
 
 #define heap_parent(i) ((i - 1) / 2)
+#define heap_left_child(i) (2 * i + 1)
+#define heap_right_child(i) (2 * i + 2)
 
 typedef unsigned int uint;
 typedef unsigned long ulong;
@@ -146,13 +148,13 @@ inline bool ranking_is_out_of_place(uint top, uint bot) {
 void ranking_max_heapify(uint i) {
 	uint pos_max, l, r;
 
-	l = 2 * i;
-	r = 2 * i + 1;
+	l = heap_left_child(i);
+	r = heap_right_child(i);
 	if (l < RANKING->len && ranking_is_out_of_place(i, l))
 		pos_max = l;
 	else
 		pos_max = i;
-	if (r < RANKING->len && ranking_is_out_of_place(i, r))
+	if (r < RANKING->len && ranking_is_out_of_place(pos_max, r))
 		pos_max = r;
 	if (pos_max != i) {
 		ranking_swap(i, pos_max);
@@ -251,13 +253,13 @@ inline void pqueue_enqueue(uint key, ulong p) {
 void pqueue_min_heapify(uint i) {
 	uint pos_min, l, r;
 
-	l = 2 * i;
-	r = 2 * i + 1;
+	l = heap_left_child(i);
+	r = heap_right_child(i);
 	if (l < PQUEUE->len && PQUEUE->heap[l].p < PQUEUE->heap[i].p)
 		pos_min = l;
 	else
 		pos_min = i;
-	if (r < PQUEUE->len && PQUEUE->heap[r].p < PQUEUE->heap[i].p)
+	if (r < PQUEUE->len && PQUEUE->heap[r].p < PQUEUE->heap[pos_min].p)
 		pos_min = r;
 	if (pos_min != i) {
 		pqueue_swap(i, pos_min);
