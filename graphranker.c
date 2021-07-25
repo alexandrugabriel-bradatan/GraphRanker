@@ -307,10 +307,12 @@ void graph_parse(uint index) {
 uint graph_next_neighbour(uint node, uint *w) {
 	static uint cur_node = 0;
 	static uint old_neighbour = 0;
+	static uint cur_index = 0;
 
-	if (node != cur_node) {
+	if (node != cur_node || cur_index != GRAPH->index) {
 		cur_node = node;
 		old_neighbour = 0;
+		cur_index = GRAPH->index;
 	}
 
 	while (GRAPH->nodes[cur_node].edges[old_neighbour] == 0 &&
