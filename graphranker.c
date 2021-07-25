@@ -298,15 +298,17 @@ inline void pqueue_clear(void) {
 /* Crate new graph */
 inline void graph_create(void) {
 	GRAPH = malloc(sizeof(graph));
+	GRAPH->nodes = malloc(N_NODES * sizeof(node));
+	for (uint i = 0; i < N_NODES; i++)
+		GRAPH->nodes[i].edges = malloc(N_NODES * sizeof(uint));
 }
 
 /* Parse new graph from stdin */
 void graph_parse(uint index) {
 	GRAPH->index = index;
 	GRAPH->score = 0;
-	GRAPH->nodes = malloc(N_NODES * sizeof(node));
+
 	for (uint i = 0; i < N_NODES; i++) {
-		GRAPH->nodes[i].edges = malloc(N_NODES * sizeof(uint));
 		for (uint j = 0; j < N_NODES; j++)
 			GRAPH->nodes[i].edges[j] = read_num();
 	}
