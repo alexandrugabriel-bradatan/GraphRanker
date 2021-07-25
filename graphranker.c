@@ -71,6 +71,7 @@ static inline void graph_rank(void);
 static inline void ranking_create(void);
 static inline void ranking_swap(uint i, uint j);
 static void ranking_max_heapify(uint i); // recursive
+static inline bool ranking_is_out_of_place(uint top, uint bot);
 static inline void ranking_bubble_up(uint elem);
 static inline void ranking_insert(ulong key, uint val);
 static inline void ranking_pop(void);
@@ -131,6 +132,13 @@ inline void ranking_swap(uint i, uint j) {
 	RANKING->heap[j] = tmp;
 }
 
+/* Return true if heap invariant between top and bot is violated */
+inline bool ranking_is_out_of_place(uint top, uint bot) {
+	return (RANKING->heap[top].key < RANKING->heap[bot].key) ||
+		(RANKING->heap[top].key == RANKING->heap[bot].key &&
+		 RANKING->heap[top].val < RANKING->heap[bot].val);
+}
+
 /*
  * Create a max-heap with root at position i assuming the children of the
  * i-th node are both sub-max-heaps.
@@ -140,11 +148,11 @@ void ranking_max_heapify(uint i) {
 
 	l = 2 * i;
 	r = 2 * i + 1;
-	if (l < RANKING->len && RANKING->heap[l].key > RANKING->heap[i].key)
+	if (l < RANKING->len && ranking_is_out_of_place(i, l))
 		pos_max = l;
 	else
 		pos_max = i;
-	if (r < RANKING->len && RANKING->heap[r].key > RANKING->heap[i].key)
+	if (r < RANKING->len && ranking_is_out_of_place(i, r))
 		pos_max = r;
 	if (pos_max != i) {
 		ranking_swap(i, pos_max);
@@ -155,7 +163,7 @@ void ranking_max_heapify(uint i) {
 /* "Bubble up" the ranking's heap element in position elem */
 inline void ranking_bubble_up(uint elem) {
 	for (uint i = elem;
-			i > 0 && RANKING->heap[heap_parent(i)].key < RANKING->heap[i].key;
+			i > 0 && ranking_is_out_of_place(heap_parent(i), i);
 			i = heap_parent(i)) {
 		ranking_swap(i, heap_parent(i));
 	}
@@ -178,7 +186,8 @@ inline void ranking_insert(ulong key, uint val) {
 		RANKING->heap[RANKING->len - 1].key = key;
 		RANKING->heap[RANKING->len - 1].val = val;
 		ranking_bubble_up(RANKING->len - 1);
-	} else if (key < RANKING->heap[0].key) {
+	} else if (key < RANKING->heap[0].key ||
+			(key == RANKING->heap[0].key && val < RANKING->heap[0].val)) {
 		RANKING->len++;
 		RANKING->heap[RANKING->len - 1].key = key;
 		RANKING->heap[RANKING->len - 1].val = val;
