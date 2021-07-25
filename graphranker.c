@@ -14,6 +14,7 @@ typedef struct {
 } node;
 
 typedef struct {
+	uint   index;
 	ulong  score;
 	node  *nodes;
 } graph;
@@ -54,7 +55,6 @@ static uint N_RANK;
 static ranking *RANKING = NULL;
 static pqueue *PQUEUE = NULL;
 static graph *GRAPH = NULL;
-static uint GRAPH_INDEX = -1;
 
 static inline uint read_num(void);
 static inline int start_main_loop(void);
@@ -63,7 +63,7 @@ static inline int add(void);
 static inline int topk(void);
 
 static inline void graph_create(void);
-static void graph_parse(void); // io-bound
+static void graph_parse(uint index); // io-bound
 static uint graph_next_neighbour(uint node, uint *w); // static vars
 static inline ulong graph_sum(void);
 static inline void graph_rank(void);
@@ -288,7 +288,8 @@ inline void graph_create(void) {
 }
 
 /* Parse new graph from stdin */
-void graph_parse(void) {
+void graph_parse(uint index) {
+	GRAPH->index = index;
 	GRAPH->score = 0;
 	GRAPH->nodes = malloc(N_NODES * sizeof(node));
 	for (uint i = 0; i < N_NODES; i++) {
@@ -365,10 +366,12 @@ inline void graph_rank(void) {
 
 /* AggiungiGrafo command */
 int add(void) {
-	GRAPH_INDEX++;
-	graph_parse();
+	static uint cur_index = 0;
+
+	graph_parse(cur_index);
 	graph_rank();
-	ranking_insert(GRAPH->score, GRAPH_INDEX);
+	ranking_insert(GRAPH->score, GRAPH->index);
+	cur_index++;
 	return 0;
 }
 
