@@ -69,9 +69,11 @@ static inline ulong graph_sum(void);
 static inline void graph_rank(void);
 
 static inline void ranking_create(void);
-static inline void ranking_insert(ulong key, uint val);
 static inline void ranking_swap(uint i, uint j);
 static void ranking_max_heapify(uint i); // recursive
+static inline void ranking_bubble_up(uint elem);
+static inline void ranking_insert(ulong key, uint val);
+static inline void ranking_pop(void);
 static inline void ranking_walk(void);
 
 static inline void pqueue_create(void);
@@ -150,28 +152,38 @@ void ranking_max_heapify(uint i) {
 	}
 }
 
-/*
- * Insert one item into the ranking if it allows it, otherwise pop the node
- * with the largest key
- */
-inline void ranking_insert(ulong key, uint val) {
-	if (key > RANKING->heap[0].key)
-		return;
-
-	RANKING->len++;
-	RANKING->heap[RANKING->len - 1].key = key;
-	RANKING->heap[RANKING->len - 1].val = val;
-
-	for (uint i = RANKING->len - 1;
+/* "Bubble up" the ranking's heap element in position elem */
+inline void ranking_bubble_up(uint elem) {
+	for (uint i = elem;
 			i > 0 && RANKING->heap[heap_parent(i)].key < RANKING->heap[i].key;
 			i = heap_parent(i)) {
 		ranking_swap(i, heap_parent(i));
 	}
+}
 
-	if (RANKING->len > N_RANK) {
+/* Pop node with the largest key */
+inline void ranking_pop(void) {
 		ranking_swap(0, RANKING->len - 1);
 		RANKING->len--;
 		ranking_max_heapify(0);
+}
+
+/*
+ * Insert one item into the ranking if it allows it, otherwise pop the node
+ * with the largest key if the given key is smaller than it
+ */
+inline void ranking_insert(ulong key, uint val) {
+	if (RANKING->len < N_RANK) {
+		RANKING->len++;
+		RANKING->heap[RANKING->len - 1].key = key;
+		RANKING->heap[RANKING->len - 1].val = val;
+		ranking_bubble_up(RANKING->len - 1);
+	} else if (key < RANKING->heap[0].key) {
+		RANKING->len++;
+		RANKING->heap[RANKING->len - 1].key = key;
+		RANKING->heap[RANKING->len - 1].val = val;
+		ranking_bubble_up(RANKING->len - 1);
+		ranking_pop();
 	}
 }
 
