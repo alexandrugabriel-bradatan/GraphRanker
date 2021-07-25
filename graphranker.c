@@ -199,12 +199,14 @@ inline void ranking_insert(ulong key, uint val) {
 }
 
 inline void ranking_walk(void) {
-	if (RANKING->len == 0)
+	if (RANKING->len == 0) {
+		putchar('\n');
 		return;
+	}
 
 	for (uint i = 0; i < RANKING->len - 1; i++)
 		printf("%d ", RANKING->heap[i].val);
-	printf("%d", RANKING->heap[RANKING->len - 1].val);
+	printf("%d\n", RANKING->heap[RANKING->len - 1].val);
 }
 
 /* Create the priority queue */
