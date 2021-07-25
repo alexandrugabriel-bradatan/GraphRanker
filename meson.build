@@ -3,7 +3,7 @@ project(
   version: '0.0.1',
   meson_version: '>=0.52.0',
   default_options: [
-	'buildtype=debugoptimized',
+	'buildtype=debug',
 	'c_std=gnu11'
   ]
 )
